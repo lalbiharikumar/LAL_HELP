@@ -1,0 +1,75 @@
+DELIMITER $$
+DROP FUNCTION IF EXISTS `lc_frist` $$
+CREATE FUNCTION `lc_frist` (str VARCHAR(200),fromStart boolean) RETURNS varchar(200)
+BEGIN
+    set str:= lcase(str);
+	if fromStart=true then
+    set str:= CONCAT(LCASE(LEFT(str, 1)),SUBSTRING(str, 2));
+	end if;
+    set str:= REPLACE(str, ' a', ' A');
+    set str:= REPLACE(str, ' b', ' B');
+    set str:= REPLACE(str, ' c', ' C');
+    set str:= REPLACE(str, ' d', ' D');
+    set str:= REPLACE(str, ' e', ' E');
+    set str:= REPLACE(str, ' f', ' F');
+    set str:= REPLACE(str, ' g', ' G');
+    set str:= REPLACE(str, ' h', ' H');
+    set str:= REPLACE(str, ' i', ' I');
+    set str:= REPLACE(str, ' j', ' J');
+    set str:= REPLACE(str, ' k', ' K');
+    set str:= REPLACE(str, ' l', ' L');
+    set str:= REPLACE(str, ' m', ' M');
+    set str:= REPLACE(str, ' n', ' N');
+    set str:= REPLACE(str, ' o', ' O');
+    set str:= REPLACE(str, ' p', ' P');
+    set str:= REPLACE(str, ' q', ' Q');
+    set str:= REPLACE(str, ' r', ' R');
+    set str:= REPLACE(str, ' s', ' S');
+    set str:= REPLACE(str, ' t', ' T');
+    set str:= REPLACE(str, ' u', ' U');
+    set str:= REPLACE(str, ' v', ' V');
+    set str:= REPLACE(str, ' w', ' W');
+    set str:= REPLACE(str, ' x', ' X');
+    set str:= REPLACE(str, ' y', ' Y');
+    set str:= REPLACE(str, ' z', ' Z');
+    return  str;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+DROP FUNCTION IF EXISTS `uc_frist` $$
+CREATE FUNCTION `uc_frist` (str VARCHAR(200),fromStart boolean) RETURNS varchar(200)
+BEGIN
+    set str:= lcase(str);
+	if fromStart=true then
+    set str:= CONCAT(LCASE(LEFT(str, 1)),SUBSTRING(str, 2));
+	end if;
+    set str:= REPLACE(str, ' a', ' A');
+    set str:= REPLACE(str, ' b', ' B');
+    set str:= REPLACE(str, ' c', ' C');
+    set str:= REPLACE(str, ' d', ' D');
+    set str:= REPLACE(str, ' e', ' E');
+    set str:= REPLACE(str, ' f', ' F');
+    set str:= REPLACE(str, ' g', ' G');
+    set str:= REPLACE(str, ' h', ' H');
+    set str:= REPLACE(str, ' i', ' I');
+    set str:= REPLACE(str, ' j', ' J');
+    set str:= REPLACE(str, ' k', ' K');
+    set str:= REPLACE(str, ' l', ' L');
+    set str:= REPLACE(str, ' m', ' M');
+    set str:= REPLACE(str, ' n', ' N');
+    set str:= REPLACE(str, ' o', ' O');
+    set str:= REPLACE(str, ' p', ' P');
+    set str:= REPLACE(str, ' q', ' Q');
+    set str:= REPLACE(str, ' r', ' R');
+    set str:= REPLACE(str, ' s', ' S');
+    set str:= REPLACE(str, ' t', ' T');
+    set str:= REPLACE(str, ' u', ' U');
+    set str:= REPLACE(str, ' v', ' V');
+    set str:= REPLACE(str, ' w', ' W');
+    set str:= REPLACE(str, ' x', ' X');
+    set str:= REPLACE(str, ' y', ' Y');
+    set str:= REPLACE(str, ' z', ' Z');
+    return  str;
+END $$
+DELIMITER ;
