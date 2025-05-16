@@ -1,0 +1,11 @@
+1. open log file in windows power sell
+----------------------------------------
+Get-Content -Path "D:\ASPApp\Apache Software Foundation\Tomcat 9.0\logs\tomcat9-stdout.2024-03-18.log" | Select-Object -Last 1000
+
+2. Clear Content in existing log file
+----------------------------------------
+Clear-Content -Path "D:\ASPApp\Apache Software Foundation\Tomcat 9.0.76\logs\tomcat9.0.76-stderr.2025-05-05.log"
+
+3. Clear Content in all file end with *.log
+----------------------------------------
+Clear-Content -Path "D:\ASPApp\Apache Software Foundation\Tomcat 9.0\logs" -Filter "*.log" -Force
