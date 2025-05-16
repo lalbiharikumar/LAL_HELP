@@ -1,0 +1,4 @@
+1. remove extra line in eclips
+---------------------------
+find : ^\s*$\r?\n
+replace with: \r\n
