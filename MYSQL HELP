@@ -9,6 +9,10 @@ step 2 : create user 'lal' @'%' identified by 'password'; -- % for accept all ho
 step 3 : GRANT ALL PRIVILEGES ON *.* TO 'lal'@'%' WITH GRANT OPTION; -- give all permision 
 step 4 : FLUSH PRIVILEGES; -- flush
 
+SET GLOBAL connect_timeout=28800;
+SET GLOBAL interactive_timeout=28800;
+SET GLOBAL wait_timeout=28800;
+
 PRIMARY KEY Mandatory ENABLE / DISABLE
 ---------------------------------------
 SET SQL_REQUIRE_PRIMARY_KEY = 0; -- OFF
@@ -18,6 +22,20 @@ SAFE UPDATE ENABLE / DISABLE
 ---------------------------------------
 SET SQL_SAFE_UPDATES = 0; -- OFF
 SET SQL_SAFE_UPDATES = 1; -- ON
+
+-- ENABLE MYSQL LOGS
+SET GLOBAL general_log = 'ON';
+SET GLOBAL general_log = 'OFF';
+
+-- write in file
+SET GLOBAL general_log_file = 'D://Deploy/logs/mysql_log_file.log'; -- open logs file to check logs
+
+-- write in table
+SET GLOBAL log_output = 'TABLE'; -- execute below query to check logs
+
+SELECT event_time, user_host, CAST(argument as char) as arguments FROM mysql.general_log WHERE command_type = 'Query' ORDER BY event_time DESC LIMIT 10;
+SHOW VARIABLES LIKE 'general_log%';
+TRUNCATE TABLE mysql.general_log;
 
 LOGS ENABLE / DISABLE
 ---------------------------------------
@@ -110,5 +128,14 @@ as JSON_RESULT from dual;
 -- GET RESULT IN JSON ARRAY
 select JSON_OBJECT('RESULTS',JSON_ARRAYAGG(JSON_OBJECT('ID',ID,'ASP_TOKEN',ASP_TOKEN,'ASP_TOKEN_EWB',ASP_TOKEN_EWB,'ASP_CLIENT_ID',ASP_CLIENT_ID,'ASP_SECRET',ASP_SECRET,'CREATED_AT',CREATED_AT,'EWB_EXPIRE_AT',EWB_EXPIRE_AT,'EXPIRE_AT',EXPIRE_AT,'PARTY_ID',PARTY_ID,'STATUS_ID',STATUS_ID,'TOKEN_STATUS',TOKEN_STATUS,'UPDATED_AT',UPDATED_AT,'GSP_CLIENT_ID',GSP_CLIENT_ID,'GSP_SECRET',GSP_SECRET,'GSP_CLIENT_ID_EINV',GSP_CLIENT_ID_EINV,'GSP_SECRET_EINV',GSP_SECRET_EINV,'ASP_TOKEN_E_INV',ASP_TOKEN_E_INV,'EINV_EXPIRE_AT',EINV_EXPIRE_AT,'module',module,'api_count_limit',api_count_limit,'client_status',client_status,'db_name',db_name,'ID',ID,'ASP_TOKEN',ASP_TOKEN,'ASP_TOKEN_EWB',ASP_TOKEN_EWB,'ASP_CLIENT_ID',ASP_CLIENT_ID,'ASP_SECRET',ASP_SECRET,'CREATED_AT',CREATED_AT,'EWB_EXPIRE_AT',EWB_EXPIRE_AT,'EXPIRE_AT',EXPIRE_AT,'PARTY_ID',PARTY_ID,'STATUS_ID',STATUS_ID,'TOKEN_STATUS',TOKEN_STATUS,'UPDATED_AT',UPDATED_AT,'GSP_CLIENT_ID',GSP_CLIENT_ID,'GSP_SECRET',GSP_SECRET,'GSP_CLIENT_ID_EINV',GSP_CLIENT_ID_EINV,'GSP_SECRET_EINV',GSP_SECRET_EINV,'ASP_TOKEN_E_INV',ASP_TOKEN_E_INV)))  AS 'Result' from asp_auths
 
+assign some value for empty or null column without using case
+-------------------------------------------------------------
+select if(ifnull(t1,'')='','ASSIGN_YOUR_DEFAULT_VALUE',t1) from lal;
 
+-- ALTERNATE query for above 
+select case when t1 is null then 'ASSIGN_YOUR_DEFAULT_VALUE' when if t1='' then 'ASSIGN_YOUR_DEFAULT_VALUE' else t1 end as t1 from lal;
+
+-- Convert one time zone to other in mysql (UTC to IST)
+select @@global.time_zone, @@session.time_zone,CURRENT_TIMESTAMP as "UTC CURRENT TIME",CONVERT_TZ(CURRENT_TIMESTAMP,'+00:00','+5:30') as "IST CURRENT TIME"; 
+			
 
