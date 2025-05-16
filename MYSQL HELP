@@ -1,0 +1,114 @@
+Check Existing user:
+-----------------------
+SELECT User, Host, account_locked, password_expired FROM mysql.user;
+
+create new user for all host
+-------------------------------------------
+step 1 : drop user 'lal'@'*'; -- if alredy exist
+step 2 : create user 'lal' @'%' identified by 'password'; -- % for accept all host if specfic replace with ip
+step 3 : GRANT ALL PRIVILEGES ON *.* TO 'lal'@'%' WITH GRANT OPTION; -- give all permision 
+step 4 : FLUSH PRIVILEGES; -- flush
+
+PRIMARY KEY Mandatory ENABLE / DISABLE
+---------------------------------------
+SET SQL_REQUIRE_PRIMARY_KEY = 0; -- OFF
+SET SQL_REQUIRE_PRIMARY_KEY = 1; -- ON
+
+SAFE UPDATE ENABLE / DISABLE
+---------------------------------------
+SET SQL_SAFE_UPDATES = 0; -- OFF
+SET SQL_SAFE_UPDATES = 1; -- ON
+
+LOGS ENABLE / DISABLE
+---------------------------------------
+SET GLOBAL log_bin_trust_function_creators = 1; -- ON
+SET GLOBAL log_bin_trust_function_creators = 0; -- OFF
+
+Increase buffer poll size 
+------------------------
+SELECT concat(round(@@bulk_insert_buffer_size / 1024 / 1024,2),' MB') AS buffer_pool_size_mb;
+set global innodb_buffer_pool_size=8*1024*1024*1024; -- 8GB (8*1024*1024*1024)
+SET GLOBAL bulk_insert_buffer_size = 32 * 1024 * 1024; --32MB Bulk Insert Buffer Size
+SET GLOBAL slow_query_log = 1; -- Log Slow Queries
+SET GLOBAL long_query_time = 1;-- Log Slow Queries
+SET GLOBAL performance_schema = 0;-- Disable Performance Schema (If Not Needed)
+SET GLOBAL join_buffer_size = 8M;-- Helps with joins on non-indexed columns.
+SET GLOBAL sort_buffer_size = 4M;-- Helps with large ORDER BY queries.
+SET GLOBAL table_open_cache = 4000;-- Recommended: Increase if you have many tables.
+SET GLOBAL thread_cache_size = 16;-- Helps reuse threads instead of creating new ones.
+SET GLOBAL max_connections = 500;-- Increase if you get "Too many connections" errors.
+
+GET DATABASE NAME WITH SIZE IN GB
+---------------------------------------------
+select * from (select table_schema as "Schema Name", sizes as "Size (GB)" from (SELECT table_schema, round(sum(data_length + index_length) / 1024 / 1024 /1024,3) sizes FROM information_schema.TABLES where table_schema in ('TEST','TEST1') GROUP BY table_schema) x order by sizes desc) tbl;
+
+GET TABLE-NAME NAME WITH SIZE IN GB
+---------------------------------------------
+select * from (select TABLE_NAME as "Table Name", sizes as "Size (GB)" from (SELECT TABLE_NAME, round(sum(data_length + index_length) / 1024 / 1024 /1024,3) sizes FROM information_schema.TABLES where table_schema in ('TEST','TEST1') GROUP BY TABLE_NAME) x order by sizes desc) tbl;
+
+
+GET ALL SCHEMA Name from DB
+----------------------------------------------------------------
+SELECT schema_name FROM INFORMATION_SCHEMA.schemata where schema_name not in ('information_schema','sakila','sys','world','tmp','performance_schema','mysql','innodb','aspsaasproddb') order by schema_name;
+SELECT distinct TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA not in ('information_schema','sakila','sys','world','tmp','performance_schema','mysql','innodb','aspsaasproddb');
+
+GET ALL TABLE Name from schema
+----------------------------------------------------------------
+SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,CREATE_TIME FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_SCHEMA = 'TEST';
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_SCHEMA = 'TEST' and TABLE_NAME like '%histories%';
+
+GET ALL VIEW NAME FROM SCHEMA
+-----------------------------------------------------------------
+SELECT TABLE_SCHEMA,TABLE_NAME,VIEW_DEFINITION,IS_UPDATABLE FROM INFORMATION_SCHEMA.VIEWS  WHERE TABLE_SCHEMA = 'TEST';
+
+GET COLUMN NAME FROM TABLE
+-----------------------------------
+SELECT TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME,IS_NULLABLE,ORDINAL_POSITION,COLUMN_TYPE,COLUMN_KEY FROM INFORMATION_SCHEMA.columns WHERE TABLE_SCHEMA='TEST' and TABLE_NAME = 'histories' ORDER BY TABLE_SCHEMA,TABLE_NAME,ORDINAL_POSITION;
+SELECT GROUP_CONCAT(COLUMN_NAME) FROM INFORMATION_SCHEMA.columns WHERE TABLE_SCHEMA='TEST' and TABLE_NAME = 'histories';
+
+DROP procedure IF EXISTS `findColumnNames`;
+DELIMITER $$
+CREATE PROCEDURE `findColumnNames`(IN dbName VARCHAR(255),IN tableName VARCHAR(255), IN ISJSON boolean, OUT colNames TEXT)
+BEGIN
+if(ISJSON=false) then 
+    SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) INTO colNames FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = dbName AND TABLE_NAME = tableName;
+    else
+    SELECT JSON_ARRAYAGG(COLUMN_NAME) INTO colNames FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = dbName AND TABLE_NAME = tableName;
+    end if;
+END$$
+DELIMITER ;
+;
+-- call findColumnNames('dev_aspdemo','ms_user',true,@cols);
+-- select @cols;
+
+
+
+
+
+GET INDEX DETAILS from DB
+---------------------------------------
+SELECT TABLE_SCHEMA,TABLE_NAME,INDEX_NAME, case when NON_UNIQUE=1 then 'true' else 'false' end as IS_UNIQUE,group_concat(COLUMN_NAME) as COLUMN_NAMES FROM INFORMATION_SCHEMA. STATISTICS WHERE TABLE_SCHEMA = 'TEST' and TABLE_NAME IN('TABLE_NAME1','TABLE_NAME2','TABLE_NAME3','TABLE_NAME4','TABLE_NAME5') group by TABLE_SCHEMA,TABLE_NAME,INDEX_NAME;
+
+GET ALL Function and Procedure NAME FROM Schema
+----------------------------------------- 
+select name,type from mysql.proc where type in('FUNCTION','PROCEDURE') and db='TEST';
+SELECT ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE IN ('FUNCTION', 'PROCEDURE')   AND ROUTINE_SCHEMA = 'TEST';
+
+GET ALL TRIGGER NAME FROM Schema
+------------------------------------
+select TRIGGER_SCHEMA,EVENT_OBJECT_TABLE,TRIGGER_NAME,CONCAT(EVENT_MANIPULATION,' ',ACTION_TIMING) AS EVENTS,ACTION_REFERENCE_OLD_ROW AS OLD_REFERENCE,ACTION_REFERENCE_NEW_ROW AS NEW_REFERENCE,ACTION_STATEMENT AS SCRIPT,CREATED from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA='TEST';
+
+-- JSON FORMATING IN MYSQL
+-- SUCCESS
+select json_object('Status',1,'Result','OK','TotalRecordCount',10,'ResponseTime',current_timestamp,'Records',JSON_ARRAY(),'SuccessDetails',JSON_OBJECT('SuccessCode','SUCCESS','SuccessMessage','10 Records found.'))
+as JSON_RESULT from dual;
+
+-- FAILED
+select json_object('Status',0,'Result','OK','TotalRecordCount',0,'ResponseTime',current_timestamp,'Records',json_array(),'SuccessDetails',JSON_OBJECT('SuccessCode','FAILED','SuccessMessage','No Record found.'))
+as JSON_RESULT from dual; 
+
+-- GET RESULT IN JSON ARRAY
+select JSON_OBJECT('RESULTS',JSON_ARRAYAGG(JSON_OBJECT('ID',ID,'ASP_TOKEN',ASP_TOKEN,'ASP_TOKEN_EWB',ASP_TOKEN_EWB,'ASP_CLIENT_ID',ASP_CLIENT_ID,'ASP_SECRET',ASP_SECRET,'CREATED_AT',CREATED_AT,'EWB_EXPIRE_AT',EWB_EXPIRE_AT,'EXPIRE_AT',EXPIRE_AT,'PARTY_ID',PARTY_ID,'STATUS_ID',STATUS_ID,'TOKEN_STATUS',TOKEN_STATUS,'UPDATED_AT',UPDATED_AT,'GSP_CLIENT_ID',GSP_CLIENT_ID,'GSP_SECRET',GSP_SECRET,'GSP_CLIENT_ID_EINV',GSP_CLIENT_ID_EINV,'GSP_SECRET_EINV',GSP_SECRET_EINV,'ASP_TOKEN_E_INV',ASP_TOKEN_E_INV,'EINV_EXPIRE_AT',EINV_EXPIRE_AT,'module',module,'api_count_limit',api_count_limit,'client_status',client_status,'db_name',db_name,'ID',ID,'ASP_TOKEN',ASP_TOKEN,'ASP_TOKEN_EWB',ASP_TOKEN_EWB,'ASP_CLIENT_ID',ASP_CLIENT_ID,'ASP_SECRET',ASP_SECRET,'CREATED_AT',CREATED_AT,'EWB_EXPIRE_AT',EWB_EXPIRE_AT,'EXPIRE_AT',EXPIRE_AT,'PARTY_ID',PARTY_ID,'STATUS_ID',STATUS_ID,'TOKEN_STATUS',TOKEN_STATUS,'UPDATED_AT',UPDATED_AT,'GSP_CLIENT_ID',GSP_CLIENT_ID,'GSP_SECRET',GSP_SECRET,'GSP_CLIENT_ID_EINV',GSP_CLIENT_ID_EINV,'GSP_SECRET_EINV',GSP_SECRET_EINV,'ASP_TOKEN_E_INV',ASP_TOKEN_E_INV)))  AS 'Result' from asp_auths
+
+
+
