@@ -1,0 +1,46 @@
+-- CREATE BAT FILE
+
+1. OPEN CMD from custome location
+File Name: mysql.bat
+@echo off
+cd /d D:\Software\Portable_Software\PortableApps\MYSQL\mysql8install\bin
+cmd
+
+2. Open jar file from portable java (custome location of poirtable java path)
+File Name: jd-gui-1.6.6.bat
+@echo off
+start "" "D:\Software\Portable_Software\PortableApps\java\jdk-23.0.2\bin\java.exe" -jar "jar/jd-gui-1.6.6.jar"
+exit
+
+3. Run tomcat service from portable java 
+File struucture should be like below 
+JAVA Path=/software/java/jdk-version/bin
+Tomcat Path=/softeare/tomcat/tomcat-version/bin
+
+File Name: apache-tomcat-8.5.88.bat
+
+@echo off
+REM Set JAVA_HOME to the portable JDK
+set "JAVA_HOME=%~dp0java\jdk1.8.0_431"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+
+REM Set CATALINA_HOME to Tomcat directory
+set "CATALINA_HOME=%~dp0tomcat\apache-tomcat-8.5.88"
+
+REM Optional: Display Java and Tomcat paths
+echo Using JAVA_HOME: %JAVA_HOME%
+echo Using CATALINA_HOME: %CATALINA_HOME%
+
+REM Start Tomcat
+call "%CATALINA_HOME%\bin\startup.bat"
+
+pause
+
+4. Run exe file without admin
+File Name: xlight.bat
+@echo off
+cd /d "%~dp0"
+cmd /min /C "set __COMPAT_LAYER=RUNASINVOKER && start "" xlight.exe"
+exit
+
+
